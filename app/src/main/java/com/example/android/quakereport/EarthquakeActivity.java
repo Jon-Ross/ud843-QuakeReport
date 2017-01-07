@@ -17,10 +17,15 @@ package com.example.android.quakereport;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class EarthquakeActivity extends AppCompatActivity {
 
@@ -29,9 +34,19 @@ public class EarthquakeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.earthquake_activity);
+        setContentView(R.layout.earthquake_view_activity);
 
-        // Create a fake list of earthquake locations.
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.earthquake_list_data);
+        if(recyclerView == null) { return; }
+
+        List<EarthquakeDataModel> earthquakeList = getEarthquakeDataModels();
+        if(earthquakeList == null) { return; }
+
+        EarthquakeListAdapter earthquakeAdapter = new EarthquakeListAdapter(earthquakeList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(earthquakeAdapter);
+
+        /*// Create a fake list of earthquake locations.
         ArrayList<String> earthquakes = new ArrayList<>();
         earthquakes.add("San Francisco");
         earthquakes.add("London");
@@ -48,8 +63,65 @@ public class EarthquakeActivity extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 this, android.R.layout.simple_list_item_1, earthquakes);
 
-        // Set the adapter on the {@link ListView}
+        // Set the earthquakeAdapter on the {@link ListView}
         // so the list can be populated in the user interface
-        earthquakeListView.setAdapter(adapter);
+        earthquakeListView.setAdapter(adapter);*/
+    }
+
+    private List<EarthquakeDataModel> getEarthquakeDataModels() {
+        List<EarthquakeDataModel> earthquakeList = new ArrayList<>();
+        earthquakeList.add(new EarthquakeDataModel("San Francisco", 4.3f, "2015-06-12"));
+        earthquakeList.add(new EarthquakeDataModel("London", 1.3f, "2015-02-02"));
+        earthquakeList.add(new EarthquakeDataModel("Tokyo", 5.2f, "2015-02-02"));
+        earthquakeList.add(new EarthquakeDataModel("Mexico City", 7.4f, "2015-02-02"));
+        earthquakeList.add(new EarthquakeDataModel("Moscow", 3.6f, "2015-02-02"));
+        earthquakeList.add(new EarthquakeDataModel("Rio de Janeiro", 4.8f, "2015-02-02"));
+        earthquakeList.add(new EarthquakeDataModel("Paris", 2.0f, "2015-02-02"));
+        return earthquakeList;
+    }
+
+    private class EarthquakeListAdapter extends RecyclerView.Adapter<EarthquakeViewHolder> {
+
+        private List<EarthquakeDataModel> list;
+
+        public EarthquakeListAdapter(List<EarthquakeDataModel> list) {
+            this.list = list;
+        }
+
+        @Override
+        public EarthquakeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View itemView = inflater.inflate(R.layout.earthquake_data_item, parent, false);
+            return new EarthquakeViewHolder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(EarthquakeViewHolder holder, int position) {
+            EarthquakeDataModel model = list.get(position);
+            holder.bindView(model);
+        }
+
+        @Override
+        public int getItemCount() {
+            return list.size();
+        }
+    }
+
+    private class EarthquakeViewHolder extends RecyclerView.ViewHolder {
+
+        public EarthquakeViewHolder(View itemView) {
+            super(itemView);
+        }
+
+        public void bindView(EarthquakeDataModel model) {
+            TextView magnitude = (TextView) itemView.findViewById(R.id.magnitude);
+            magnitude.setText(String.valueOf(model.getMagnitude()));
+
+            TextView location = (TextView) itemView.findViewById(R.id.location);
+            location.setText(model.getLocation());
+
+            TextView date = (TextView) itemView.findViewById(R.id.date);
+            date.setText(model.getDate());
+        }
     }
 }
