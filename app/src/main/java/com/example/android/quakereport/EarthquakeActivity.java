@@ -15,7 +15,9 @@
  */
 package com.example.android.quakereport;
 
+import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -97,10 +99,11 @@ public class EarthquakeActivity extends AppCompatActivity {
             return list.size();
         }
 
-        class EarthquakeViewHolder extends RecyclerView.ViewHolder {
+        class EarthquakeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
             EarthquakeViewHolder(View itemView) {
                 super(itemView);
+                itemView.setOnClickListener(this);
             }
 
             void bindView(EarthquakeDataModel model) {
@@ -125,6 +128,18 @@ public class EarthquakeActivity extends AppCompatActivity {
 
                 TextView time = (TextView) itemView.findViewById(R.id.time);
                 time.setText(formatter.getTimeFormatted(dateInMillis));
+            }
+
+            @Override
+            public void onClick(View v) {
+                EarthquakeDataModel model = list.get(getLayoutPosition());
+                openEarthquakeWebPage(model.getUrl());
+            }
+
+            private void openEarthquakeWebPage(String url) {
+                Uri uri = Uri.parse(url);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
             }
         }
     }

@@ -5,14 +5,16 @@ package com.example.android.quakereport;
  */
 public class EarthquakeDataModel {
 
-    private String location;
-    private double magnitude;
-    private long date;
+    private final String location;
+    private final double magnitude;
+    private final long date;
+    private final String url;
 
-    public EarthquakeDataModel(String location, double magnitude, long date) {
+    public EarthquakeDataModel(String location, double magnitude, long date, String url) {
         this.location = location;
         this.magnitude = magnitude;
         this.date = date;
+        this.url = url;
     }
 
 
@@ -28,5 +30,9 @@ public class EarthquakeDataModel {
 
     public long getDateInMillis() {
         return date;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

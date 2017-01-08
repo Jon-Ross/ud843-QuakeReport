@@ -60,7 +60,8 @@ public final class QueryUtils {
                 String location = propsObject.getString("place");
                 double magnitude = propsObject.getDouble("mag");
                 long date = propsObject.getLong("time");
-                EarthquakeDataModel model = new EarthquakeDataModel(location, magnitude, date);
+                String url = propsObject.getString("url");
+                EarthquakeDataModel model = new EarthquakeDataModel(location, magnitude, date, url);
                 earthquakes.add(model);
             }
         } catch (JSONException e) {
