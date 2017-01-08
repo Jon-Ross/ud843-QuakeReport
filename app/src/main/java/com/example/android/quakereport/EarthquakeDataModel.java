@@ -7,9 +7,9 @@ public class EarthquakeDataModel {
 
     private String location;
     private float magnitude;
-    private String date;
+    private long date;
 
-    public EarthquakeDataModel(String location, float magnitude, String date) {
+    public EarthquakeDataModel(String location, float magnitude, long date) {
         this.location = location;
         this.magnitude = magnitude;
         this.date = date;
@@ -22,23 +22,11 @@ public class EarthquakeDataModel {
         return location;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
     public float getMagnitude() {
         return magnitude;
     }
 
-    public void setMagnitude(float magnitude) {
-        this.magnitude = magnitude;
-    }
-
-    public String getDate() {
+    public long getDateInMillis() {
         return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
     }
 }
