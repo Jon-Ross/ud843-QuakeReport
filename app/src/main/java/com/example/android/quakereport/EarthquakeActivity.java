@@ -15,12 +15,24 @@
  */
 package com.example.android.quakereport;
 
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
-import java.util.ArrayList;
+import com.example.android.quakereport.utils.EarthquakeFormatter;
+import com.example.android.quakereport.utils.QueryUtils;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class EarthquakeActivity extends AppCompatActivity {
 
@@ -29,27 +41,91 @@ public class EarthquakeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.earthquake_activity);
+        setContentView(R.layout.earthquake_view_activity);
 
-        // Create a fake list of earthquake locations.
-        ArrayList<String> earthquakes = new ArrayList<>();
-        earthquakes.add("San Francisco");
-        earthquakes.add("London");
-        earthquakes.add("Tokyo");
-        earthquakes.add("Mexico City");
-        earthquakes.add("Moscow");
-        earthquakes.add("Rio de Janeiro");
-        earthquakes.add("Paris");
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.earthquake_list_data);
+        if(recyclerView == null) { return; }
 
-        // Find a reference to the {@link ListView} in the layout
+        List<EarthquakeDataModel> earthquakeList = QueryUtils.extractEarthquakes();
+        if(earthquakeList == null) { return; }
+
+        EarthquakeListAdapter earthquakeAdapter = new EarthquakeListAdapter(
+                earthquakeList, new EarthquakeFormatter(this, new Date(),
+                new SimpleDateFormat("LLL dd, yyyy", Locale.UK),
+                new SimpleDateFormat("h:mm a", Locale.UK), new DecimalFormat("0.0")));
+        //recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(earthquakeAdapter);
+
+        /*// Find a reference to the {@link ListView} in the layout
         ListView earthquakeListView = (ListView) findViewById(R.id.list);
 
         // Create a new {@link ArrayAdapter} of earthquakes
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 this, android.R.layout.simple_list_item_1, earthquakes);
 
-        // Set the adapter on the {@link ListView}
+        // Set the earthquakeAdapter on the {@link ListView}
         // so the list can be populated in the user interface
-        earthquakeListView.setAdapter(adapter);
+        earthquakeListView.setAdapter(adapter);*/
+    }
+
+    private class EarthquakeListAdapter extends RecyclerView.Adapter<EarthquakeListAdapter.EarthquakeViewHolder> {
+
+        private List<EarthquakeDataModel> list;
+        private EarthquakeFormatter formatter;
+
+        EarthquakeListAdapter(List<EarthquakeDataModel> list, EarthquakeFormatter formatter) {
+            this.list = list;
+            this.formatter = formatter;
+        }
+
+        @Override
+        public EarthquakeViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View itemView = inflater.inflate(R.layout.earthquake_data_item, parent, false);
+            return new EarthquakeViewHolder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(EarthquakeViewHolder holder, int position) {
+            EarthquakeDataModel model = list.get(position);
+            holder.bindView(model);
+        }
+
+        @Override
+        public int getItemCount() {
+            return list.size();
+        }
+
+        class EarthquakeViewHolder extends RecyclerView.ViewHolder {
+
+            EarthquakeViewHolder(View itemView) {
+                super(itemView);
+            }
+
+            void bindView(EarthquakeDataModel model) {
+                double magnitude = model.getMagnitude();
+                TextView magnitudeView = (TextView) itemView.findViewById(R.id.magnitude);
+                magnitudeView.setText(formatter.getMagnitudeFormatted(magnitude));
+                GradientDrawable magnitudeDrawable = (GradientDrawable) magnitudeView.getBackground();
+                magnitudeDrawable.setColor(formatter.getMagnitudeCircleColor(magnitude));
+
+                String locationText = model.getLocation();
+                TextView primaryLocationView = (TextView) itemView.findViewById(R.id.primary_location);
+                String primaryLocation = formatter.getPrimaryLocation(locationText);
+                primaryLocationView.setText(primaryLocation);
+
+                TextView locationOffsetView = (TextView) itemView.findViewById(R.id.location_offset);
+                String locationOffset = formatter.getLocationOffset(locationText);
+                locationOffsetView.setText(locationOffset);
+
+                long dateInMillis = model.getDateInMillis();
+                TextView date = (TextView) itemView.findViewById(R.id.date);
+                date.setText(formatter.getDateFormatted(dateInMillis));
+
+                TextView time = (TextView) itemView.findViewById(R.id.time);
+                time.setText(formatter.getTimeFormatted(dateInMillis));
+            }
+        }
     }
 }
