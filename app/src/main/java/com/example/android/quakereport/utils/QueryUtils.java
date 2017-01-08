@@ -58,7 +58,7 @@ public final class QueryUtils {
                 JSONObject propsObject = featuresObject.getJSONObject("properties");
 
                 String location = propsObject.getString("place");
-                float magnitude = (float) propsObject.getDouble("mag");
+                double magnitude = propsObject.getDouble("mag");
                 long date = propsObject.getLong("time");
                 EarthquakeDataModel model = new EarthquakeDataModel(location, magnitude, date);
                 earthquakes.add(model);

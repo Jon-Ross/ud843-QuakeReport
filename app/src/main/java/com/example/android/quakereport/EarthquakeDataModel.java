@@ -6,10 +6,10 @@ package com.example.android.quakereport;
 public class EarthquakeDataModel {
 
     private String location;
-    private float magnitude;
+    private double magnitude;
     private long date;
 
-    public EarthquakeDataModel(String location, float magnitude, long date) {
+    public EarthquakeDataModel(String location, double magnitude, long date) {
         this.location = location;
         this.magnitude = magnitude;
         this.date = date;
@@ -22,7 +22,7 @@ public class EarthquakeDataModel {
         return location;
     }
 
-    public float getMagnitude() {
+    public double getMagnitude() {
         return magnitude;
     }
 

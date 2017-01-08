@@ -3,14 +3,19 @@
     xmlns:tool="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:minHeight="50dp"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
 
     <TextView
         android:id="@+id/magnitude"
         android:layout_width="70dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
         android:gravity="center"
         android:textSize="18sp"
         tool:text="3.4"/>
@@ -21,8 +26,8 @@
         android:layout_height="20dp"
         android:layout_toRightOf="@+id/magnitude"
         android:layout_toEndOf="@+id/magnitude"
-        android:layout_toLeftOf="@+id/date"
-        android:layout_toStartOf="@+id/date"
+        android:layout_toLeftOf="@+id/date_time"
+        android:layout_toStartOf="@+id/date_time"
         android:layout_alignParentTop="true"
         android:gravity="center_vertical"
         android:textSize="15sp"
@@ -31,11 +36,11 @@
     <TextView
         android:id="@+id/primary_location"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_toRightOf="@+id/magnitude"
         android:layout_toEndOf="@+id/magnitude"
-        android:layout_toLeftOf="@+id/date"
-        android:layout_toStartOf="@+id/date"
+        android:layout_toLeftOf="@+id/date_time"
+        android:layout_toStartOf="@+id/date_time"
         android:layout_below="@+id/location_offset"
         android:layout_alignParentBottom="true"
         android:maxLines="3"
@@ -43,27 +48,32 @@
         android:textSize="18sp"
         tool:text="San Francisco"/>
 
-    <TextView
-        android:id="@+id/date"
+    <LinearLayout
+        android:id="@+id/date_time"
         android:layout_width="120dp"
-        android:layout_height="25dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/time"
-        android:gravity="center"
-        android:textSize="15sp"
-        tool:text="2016-03-12"/>
+        android:layout_alignParentTop="true">
 
-    <TextView
-        android:id="@+id/time"
-        android:layout_width="120dp"
-        android:layout_height="25dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:textSize="15sp"
-        tool:text="2:30 am"/>
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="120dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="15sp"
+            tool:text="2016-03-12"/>
+
+        <TextView
+            android:id="@+id/time"
+            android:layout_width="120dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:textSize="15sp"
+            tool:text="2:30 am"/>
+    </LinearLayout>
 
 </RelativeLayout>

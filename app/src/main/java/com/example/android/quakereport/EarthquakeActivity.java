@@ -25,12 +25,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.android.quakereport.utils.DateTimeFormatterUtils;
+import com.example.android.quakereport.utils.EarthquakeFormatter;
 import com.example.android.quakereport.utils.QueryUtils;
 
-import java.util.ArrayList;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class EarthquakeActivity extends AppCompatActivity {
 
@@ -47,22 +49,15 @@ public class EarthquakeActivity extends AppCompatActivity {
         List<EarthquakeDataModel> earthquakeList = QueryUtils.extractEarthquakes();
         if(earthquakeList == null) { return; }
 
-        EarthquakeListAdapter earthquakeAdapter = new EarthquakeListAdapter(earthquakeList);
+        EarthquakeListAdapter earthquakeAdapter = new EarthquakeListAdapter(
+                earthquakeList, new EarthquakeFormatter(new Date(),
+                new SimpleDateFormat("LLL dd, yyyy", Locale.UK),
+                new SimpleDateFormat("h:mm a", Locale.UK), new DecimalFormat("0.0")));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(earthquakeAdapter);
 
-        /*// Create a fake list of earthquake locations.
-        ArrayList<String> earthquakes = new ArrayList<>();
-        earthquakes.add("San Francisco");
-        earthquakes.add("London");
-        earthquakes.add("Tokyo");
-        earthquakes.add("Mexico City");
-        earthquakes.add("Moscow");
-        earthquakes.add("Rio de Janeiro");
-        earthquakes.add("Paris");
-
-        // Find a reference to the {@link ListView} in the layout
+        /*// Find a reference to the {@link ListView} in the layout
         ListView earthquakeListView = (ListView) findViewById(R.id.list);
 
         // Create a new {@link ArrayAdapter} of earthquakes
@@ -74,24 +69,14 @@ public class EarthquakeActivity extends AppCompatActivity {
         earthquakeListView.setAdapter(adapter);*/
     }
 
-    private List<EarthquakeDataModel> getEarthquakeDataModels() {
-        List<EarthquakeDataModel> earthquakeList = new ArrayList<>();
-        earthquakeList.add(new EarthquakeDataModel("San Francisco", 4.3f, 124091243));
-        earthquakeList.add(new EarthquakeDataModel("London", 1.3f, 23094819));
-        earthquakeList.add(new EarthquakeDataModel("Tokyo", 5.2f, 2432402));
-        earthquakeList.add(new EarthquakeDataModel("Mexico City", 7.4f, 23678323));
-        earthquakeList.add(new EarthquakeDataModel("Moscow", 3.6f, 239729379));
-        earthquakeList.add(new EarthquakeDataModel("Rio de Janeiro", 4.8f, 23423094));
-        earthquakeList.add(new EarthquakeDataModel("Paris", 2.0f, 984320932));
-        return earthquakeList;
-    }
-
-    private class EarthquakeListAdapter extends RecyclerView.Adapter<EarthquakeViewHolder> {
+    private class EarthquakeListAdapter extends RecyclerView.Adapter<EarthquakeListAdapter.EarthquakeViewHolder> {
 
         private List<EarthquakeDataModel> list;
+        private EarthquakeFormatter formatter;
 
-        public EarthquakeListAdapter(List<EarthquakeDataModel> list) {
+        EarthquakeListAdapter(List<EarthquakeDataModel> list, EarthquakeFormatter formatter) {
             this.list = list;
+            this.formatter = formatter;
         }
 
         @Override
@@ -111,46 +96,34 @@ public class EarthquakeActivity extends AppCompatActivity {
         public int getItemCount() {
             return list.size();
         }
-    }
 
-    private class EarthquakeViewHolder extends RecyclerView.ViewHolder {
+        class EarthquakeViewHolder extends RecyclerView.ViewHolder {
 
-        public EarthquakeViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        public void bindView(EarthquakeDataModel model) {
-            TextView magnitude = (TextView) itemView.findViewById(R.id.magnitude);
-            magnitude.setText(String.valueOf(model.getMagnitude()));
-
-            String locationText = model.getLocation();
-            String[] locationParts = locationText.split(" of ");
-
-            TextView primaryLocationView = (TextView) itemView.findViewById(R.id.primary_location);
-            String primaryLocation;
-            if(locationParts.length == 1) {
-                primaryLocation = locationParts[0];
-            } else {
-                primaryLocation = locationParts[1];
+            EarthquakeViewHolder(View itemView) {
+                super(itemView);
             }
-            primaryLocationView.setText(primaryLocation);
 
-            TextView locationOffsetView = (TextView) itemView.findViewById(R.id.location_offset);
-            String locationOffset;
-            if(locationParts.length == 1) {
-                locationOffset = "Near the";
-            } else {
-                locationOffset = locationParts[0] + " of ";
+            void bindView(EarthquakeDataModel model) {
+                double magnitude = model.getMagnitude();
+                TextView magnitudeView = (TextView) itemView.findViewById(R.id.magnitude);
+                magnitudeView.setText(formatter.getMagnitudeFormatted(magnitude));
+
+                String locationText = model.getLocation();
+                TextView primaryLocationView = (TextView) itemView.findViewById(R.id.primary_location);
+                String primaryLocation = formatter.getPrimaryLocation(locationText);
+                primaryLocationView.setText(primaryLocation);
+
+                TextView locationOffsetView = (TextView) itemView.findViewById(R.id.location_offset);
+                String locationOffset = formatter.getLocationOffset(locationText);
+                locationOffsetView.setText(locationOffset);
+
+                long dateInMillis = model.getDateInMillis();
+                TextView date = (TextView) itemView.findViewById(R.id.date);
+                date.setText(formatter.getDateFormatted(dateInMillis));
+
+                TextView time = (TextView) itemView.findViewById(R.id.time);
+                time.setText(formatter.getTimeFormatted(dateInMillis));
             }
-            locationOffsetView.setText(locationOffset);
-
-            TextView date = (TextView) itemView.findViewById(R.id.date);
-            long dateInMillis = model.getDateInMillis();
-            Date dateObject = new Date(dateInMillis);
-            date.setText(DateTimeFormatterUtils.getDateFormat(dateObject));
-
-            TextView time = (TextView) itemView.findViewById(R.id.time);
-            time.setText(DateTimeFormatterUtils.getTimeFormat(dateObject));
         }
     }
 }
