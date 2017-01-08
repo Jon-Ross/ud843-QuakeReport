@@ -15,9 +15,9 @@
  */
 package com.example.android.quakereport;
 
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -50,10 +50,10 @@ public class EarthquakeActivity extends AppCompatActivity {
         if(earthquakeList == null) { return; }
 
         EarthquakeListAdapter earthquakeAdapter = new EarthquakeListAdapter(
-                earthquakeList, new EarthquakeFormatter(new Date(),
+                earthquakeList, new EarthquakeFormatter(this, new Date(),
                 new SimpleDateFormat("LLL dd, yyyy", Locale.UK),
                 new SimpleDateFormat("h:mm a", Locale.UK), new DecimalFormat("0.0")));
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        //recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(earthquakeAdapter);
 
@@ -107,6 +107,8 @@ public class EarthquakeActivity extends AppCompatActivity {
                 double magnitude = model.getMagnitude();
                 TextView magnitudeView = (TextView) itemView.findViewById(R.id.magnitude);
                 magnitudeView.setText(formatter.getMagnitudeFormatted(magnitude));
+                GradientDrawable magnitudeDrawable = (GradientDrawable) magnitudeView.getBackground();
+                magnitudeDrawable.setColor(formatter.getMagnitudeCircleColor(magnitude));
 
                 String locationText = model.getLocation();
                 TextView primaryLocationView = (TextView) itemView.findViewById(R.id.primary_location);
