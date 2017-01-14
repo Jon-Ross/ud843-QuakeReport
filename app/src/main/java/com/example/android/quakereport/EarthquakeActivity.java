@@ -18,6 +18,7 @@ package com.example.android.quakereport;
 import android.content.Intent;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,10 +29,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.android.quakereport.utils.EarthquakeFormatter;
-import com.example.android.quakereport.utils.QueryUtils;
 
+import java.io.IOException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -39,6 +42,10 @@ import java.util.Locale;
 public class EarthquakeActivity extends AppCompatActivity {
 
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
+
+    private static final String EARTHQUAKE_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
+
+    private EarthquakeListAdapter earthquakeAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,16 +55,17 @@ public class EarthquakeActivity extends AppCompatActivity {
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.earthquake_list_data);
         if(recyclerView == null) { return; }
 
-        List<EarthquakeDataModel> earthquakeList = QueryUtils.extractEarthquakes();
-        if(earthquakeList == null) { return; }
-
-        EarthquakeListAdapter earthquakeAdapter = new EarthquakeListAdapter(
+        List<EarthquakeDataModel> earthquakeList = new ArrayList<>();
+        earthquakeAdapter = new EarthquakeListAdapter(
                 earthquakeList, new EarthquakeFormatter(this, new Date(),
                 new SimpleDateFormat("LLL dd, yyyy", Locale.UK),
                 new SimpleDateFormat("h:mm a", Locale.UK), new DecimalFormat("0.0")));
-        //recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(earthquakeAdapter);
+
+        EarthquakeAsyncTask task = new EarthquakeAsyncTask(
+                new EarthquakeModelsGenerator(new EarthquakeNetwork()));
+        task.execute(EARTHQUAKE_URL);
 
         /*// Find a reference to the {@link ListView} in the layout
         ListView earthquakeListView = (ListView) findViewById(R.id.list);
@@ -69,6 +77,14 @@ public class EarthquakeActivity extends AppCompatActivity {
         // Set the earthquakeAdapter on the {@link ListView}
         // so the list can be populated in the user interface
         earthquakeListView.setAdapter(adapter);*/
+    }
+
+    private void updateEarthquakeData(List<EarthquakeDataModel> models) {
+        if(models == null) {
+            return;
+        }
+        earthquakeAdapter.setList(models);
+        earthquakeAdapter.notifyDataSetChanged();
     }
 
     private class EarthquakeListAdapter extends RecyclerView.Adapter<EarthquakeListAdapter.EarthquakeViewHolder> {
@@ -97,6 +113,10 @@ public class EarthquakeActivity extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return list.size();
+        }
+
+        public void setList(List<EarthquakeDataModel> list) {
+            this.list = list;
         }
 
         class EarthquakeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -141,6 +161,37 @@ public class EarthquakeActivity extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(intent);
             }
+        }
+    }
+
+    private class EarthquakeAsyncTask extends AsyncTask<String, Void, List<EarthquakeDataModel>> {
+
+        private EarthquakeModelsGenerator dataNetwork;
+
+        EarthquakeAsyncTask(EarthquakeModelsGenerator dataNetwork) {
+            this.dataNetwork = dataNetwork;
+        }
+
+        @Override
+        protected List<EarthquakeDataModel> doInBackground(String... urls) {
+            if(urls == null || urls.length < 1) {
+                return null;
+            }
+            try {
+                URL url = new URL(urls[0]);
+                return dataNetwork.getEarthquakeModels(url);
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(List<EarthquakeDataModel> earthquakeDataModels) {
+            if(earthquakeDataModels == null) {
+                return;
+            }
+            updateEarthquakeData(earthquakeDataModels);
         }
     }
 }
